@@ -1,0 +1,102 @@
+---
+name: kafka
+icon_file: resources/cf-kafka.png
+label: Apache Kafka
+description: A Community Apache Kafka Service and Broker for Cloud Foundry
+
+apply_open_security_group: true         # Apply open security group, default: false
+
+properties:
+- name: author
+  type: string
+  label: Author
+  value: bbertka@pivotal.io
+
+docker_release:
+ - name: docker
+   version: latest
+
+stemcell_criteria:
+  version: '3262.12'
+
+forms:
+- name: kafka-form
+  label: Kafka Config
+  description: Custom Properties for Kafka Service and Broker
+  properties:
+  - name: kafka_manager_url
+    type: string
+    label: Kafka Manager URL
+    default: 'http://kafka-manager.yourdomain.com'
+    description: Kafka Manager URL
+  - name: kafka_manager_port
+    type: integer
+    label: Port
+    default: '9000'
+    description: Kafka Manager Port Number
+  - name: kafka_host
+    type: string
+    label: Kafka Advertised Hostname
+    default: 'kafka.yourdomain.com'
+    description: Kafka Advertised Host Name
+  - name: kafka_port
+    type: integer
+    label: Port
+    default: '9092'
+    description: Kafka Port Number
+  - name: zookeeper_port
+    type: integer
+    label: Port
+    default: '2181'
+    description: Kafka Port Number
+
+packages:
+- name: kafka-broker
+  type: app-broker
+  manifest:
+    path: cf-kafka-servicebroker/build/libs/kafka-service-broker-1.0.0.jar
+    memory: 1G
+    env:
+      ZOOKEEPER_URL: "((.properties.kafka_host.value)):2181"
+      MANAGER_URL: "((.properties.kafka_manager_url.value))"
+
+- name: kafka
+  type: docker-bosh
+  docker_images:
+  - spotify/kafka
+  instance_type: 'c4.large'
+  cpu: 2
+  memory: 3840
+  ephemeral_disk: 8192
+  persistent_disk: 65536
+  instances: 1
+  manifest: |
+    containers:
+    - name: kafka
+      image: "spotify/kafka"
+      bind_ports:
+      - '((.properties.zookeeper_port.value)):2181'
+      - '((.properties.kafka_port.value)):9092'
+      env_vars:
+      - "ADVERTISED_HOST=((.properties.kafka_host.value))"
+      - "ADVERTISED_PORT=((.properties.kafka_port.value))"
+
+- name: kafka-manager
+  type: docker-bosh
+  docker_images:
+  - sheepkiller/kafka-manager:stable
+  instance_type: 'c4.large'
+  cpu: 2
+  memory: 3840
+  ephemeral_disk: 8192
+  persistent_disk: 65536
+  instances: 1
+  manifest: |
+    containers:
+    - name: kafka-manager
+      image: "sheepkiller/kafka-manager:stable"
+      bind_ports:
+      - '((.properties.kafka_manager_port.value)):9000'
+      env_vars:
+      - 'ZK_HOSTS=((.properties.kafka_host.value)):2181'
+      - 'APPLICATION_SECRET=letmein'

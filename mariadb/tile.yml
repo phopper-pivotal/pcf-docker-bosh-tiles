@@ -1,0 +1,74 @@
+---
+name: mariadb # By convention lowercase with dashes
+icon_file: resources/cf-mariadb.png
+label: MariaDB
+description: A Community MariaDB Tile for Pivotal Cloud Foundry
+
+apply_open_security_group: true         # Apply open security group, default: false
+
+properties:
+- name: author
+  type: string
+  label: Author
+  value: bbertka@pivotal.io
+
+docker_release:
+ - name: docker
+   version: latest
+
+stemcell_criteria:
+  version: '3262.12'
+
+forms:
+- name: mariadb-form
+  label: MariaDB Config
+  description: Custom Properties for MongoDB Service Broker
+  properties:
+  - name: mariadb_host
+    type: string
+    label: MariaDB Hostname
+    default: 'mariadb.yourdomain.com'
+    description: MariaDB Host Name
+  - name: mariadb_port
+    type: integer
+    label: Port
+    default: '3306'
+    description: MariaDB Port Name
+  - name: mariadb_username
+    type: string
+    label: MariaDB Username
+    default: 'admin'
+    description: MariaDB User Name
+  - name: mariadb_password
+    type: secret
+    label: MariaDB Password
+    description: MariaDB Password
+  - name: mariadb_database
+    type: string
+    label: MariaDB Database
+    default: 'pcf'
+    description: MariaDB Database
+
+packages:
+- name: mariadb
+  type: docker-bosh
+  docker_images:
+  - frodenas/mariadb
+  instance_type: 'c4.large'
+  cpu: 2
+  memory: 3840
+  ephemeral_disk: 8192
+  persistent_disk: 4096
+  instances: 1
+  manifest: |
+    containers:
+    - name: mariadb
+      image: "frodenas/mariadb"
+      bind_volumes:
+      - "/data"
+      bind_ports:
+      - "3306:3306"
+      env_vars:
+      - "MYSQL_USERNAME=((.properties.mariadb_username.value))"
+      - "MYSQL_PASSWORD=((.properties.mariadb_password.value))"
+      - "MYSQL_DBNAME=((.properties.mariadb_database.value))"

@@ -1,0 +1,72 @@
+---
+name: redis # By convention lowercase with dashes
+icon_file: resources/cf-redis.png
+label: Redis
+description: A Community Redis Tile for Pivotal Cloud Foundry
+
+apply_open_security_group: true         # Apply open security group, default: false
+
+properties:
+- name: author
+  type: string
+  label: Author
+  value: bbertka@pivotal.io
+
+docker_release:
+ - name: docker
+   version: latest
+
+stemcell_criteria:
+  version: '3262.12'
+
+forms:
+- name: redis-form
+  label: Redis Config
+  description: Custom Properties for Redis Service Broker
+  properties:
+  - name: redis_host
+    type: string
+    label: Redis Hostname
+    default: 'redis.yourdomain.com'
+    description: Redis Host Name
+  - name: redis_port
+    type: integer
+    label: Port
+    default: '6379'
+    description: Redis Port Name
+  - name: redis_username
+    type: string
+    label: Redis Username
+    default: 'admin'
+    description: Redis User Name
+  - name: redis_password
+    type: secret
+    label: Redis Password
+    description: Redis Password
+  - name: redis_database
+    type: string
+    label: Redis Database
+    default: 'pcf'
+    description: Redis Database
+
+packages:
+- name: redis
+  type: docker-bosh
+  docker_images:
+  - frodenas/redis
+  instance_type: 'c4.large'
+  cpu: 2
+  memory: 3840
+  ephemeral_disk: 8192
+  persistent_disk: 4096
+  instances: 1
+  manifest: |
+    containers:
+    - name: redis
+      image: "frodenas/redis"
+      bind_volumes:
+      - "/data"
+      bind_ports:
+      - "6379:6379"
+      env_vars:
+      - "REDIS_PASSWORD=((.properties.redis_password.value))"

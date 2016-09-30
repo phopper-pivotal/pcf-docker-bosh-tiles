@@ -1,0 +1,85 @@
+---
+name: splunk # By convention lowercase with dashes
+icon_file: resources/cf-splunk.png
+label: Splunk Enterprise
+description: A Splunk Enterprise Tile for Pivotal Cloud Foundry
+
+apply_open_security_group: true         # Apply open security group, default: false
+
+properties:
+- name: author
+  type: string
+  label: Author
+  value: bbertka@pivotal.io
+
+docker_release:
+ - name: docker
+   version: '23'
+
+stemcell_criteria:
+  version: '3262.12'
+
+forms:
+- name: splunk-form
+  label: Loggregator Drain Config
+  description: Custom Properties for Loggregator Drain
+  properties:
+  - name: pcf_system_domain
+    type: string
+    label: PCF System Domain
+    default: 'sys.yourdomain.com'
+    description: The system domain where components such as API are located
+  - name: syslog_url
+    type: string
+    label: Syslog URL
+    default: 'splunk.yourdomain.com'
+    description: Syslog URL
+  - name: syslog_port
+    type: integer
+    label: Syslog Port
+    default: '1976'
+    description: Syslog Port
+  - name: firehose_user
+    type: string
+    label: PCF Firehose Username
+    default: 'admin'
+    description: PCF Firehose Username
+  - name: firehose_password
+    type: secret
+    label: PCF Firehose Password
+    description: PCF Firehose Password
+  - name: splunk_debug
+    type: string
+    label: Splunk Debug?
+    default: 'false'
+    description: Toggles Splunk debug mode
+
+packages:
+
+- name: splunk
+  type: docker-bosh
+  docker_images:
+  - splunk/enterprisetrial
+  instance_type: 'c4.large'
+  cpu: 2
+  memory: 3840
+  ephemeral_disk: 8192
+  persistent_disk: 16384
+  instances: 1
+  manifest: |
+    containers:
+    - name: splunk
+      image: "splunk/enterprisetrial"
+      bind_volumes:
+      - "/opt/splunk/etc"
+      - "/opt/splunk/var"
+      bind_ports:
+      - "8000:8000"
+      - "8089:8089"
+      - "8088:8088"
+      - "8191:8191"
+      - "9997:9997"
+      - "1514:1514"
+      env_vars:
+      - "SPLUNK_START_ARGS=--accept-license"
+      - "SPLUNK_ENABLE_LISTEN=((.properties.syslog_port.value))"

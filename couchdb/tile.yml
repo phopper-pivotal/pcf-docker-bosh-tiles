@@ -1,0 +1,81 @@
+---
+name: couchdb
+icon_file: resources/cf-couchdb.png
+label: CouchDB
+description: A Community CouchDB Service Broker for Cloud Foundry
+
+apply_open_security_group: true         # Apply open security group, default: false
+
+properties:
+- name: author
+  type: string
+  label: Author
+  value: bbertka@pivotal.io
+
+docker_release:
+ - name: docker
+   version: latest
+
+stemcell_criteria:
+  version: '3262.12'
+
+forms:
+- name: couchdb-form
+  label: Broker Config
+  description: Custom Properties for CouchDB Service Broker
+  properties:
+  - name: couchdb_host
+    type: string
+    label: CouchDB Hostname
+    default: 'couchdb.yourdomain.com'
+    description: CouchDB Host Name
+  - name: couchdb_port
+    type: integer
+    label: Port
+    default: '5984'
+    description: CouchDB Port Name
+  - name: couchdb_username
+    type: string
+    label: CouchDB Username
+    default: 'admin'
+    description: couchdb User Name
+  - name: couchdb_password
+    type: secret
+    label: CouchDB Password
+    description: CouchDB Password
+  - name: couchdb_database
+    type: string
+    label: CouchDB Database
+    default: 'pcf'
+    description: CouchDB Database
+
+#packages:
+#- name: couchdb-broker
+#  type: app-broker
+#  manifest:
+#    path: service-broker/target/couchdb-service-broker-0.0.1-RELEASE.jar
+#    memory: 1G
+
+packages:
+- name: couchdb
+  type: docker-bosh
+  docker_images:
+  - frodenas/couchdb
+  instance_type: 'c4.large'
+  cpu: 2
+  memory: 3840
+  ephemeral_disk: 8192
+  persistent_disk: 4096
+  instances: 1
+  manifest: |
+    containers:
+    - name: couchdb
+      image: "frodenas/couchdb"
+      bind_ports:
+      - '5984:5984'
+      bind_volumes:
+      - "/data"
+      env_vars:
+      - "COUCHDB_DBNAME=((.properties.couchdb_database.value))"
+      - "COUCHDB_USERNAME=((.properties.couchdb_username.value))"
+      - "COUCHDB_PASSWORD=((.properties.couchdb_password.value))"

@@ -1,0 +1,75 @@
+---
+name: rabbitmq # By convention lowercase with dashes
+icon_file: resources/cf-rabbitmq.png
+label: RabbitMQ
+description: A Community RabbitMQ Tile for Pivotal Cloud Foundry
+
+apply_open_security_group: true         # Apply open security group, default: false
+
+properties:
+- name: author
+  type: string
+  label: Author
+  value: bbertka@pivotal.io
+
+docker_release:
+ - name: docker
+   version: latest
+
+stemcell_criteria:
+  version: '3262.12'
+
+forms:
+- name: rabbitmq-form
+  label: RabbitMQ Config
+  description: Custom Properties for MongoDB Service Broker
+  properties:
+  - name: rabbitmq_host
+    type: string
+    label: RabbitMQ Hostname
+    default: 'rabbitmq.yourdomain.com'
+    description: RabbitMQ Host Name
+  - name: rabbitmq_port
+    type: integer
+    label: Port
+    default: '5672'
+    description: RabbitMQ Port Name
+  - name: rabbitmq_username
+    type: string
+    label: RabbitMQ Username
+    default: 'admin'
+    description: RabbitMQ User Name
+  - name: rabbitmq_password
+    type: secret
+    label: RabbitMQ Password
+    description: RabbitMQ Password
+  - name: rabbitmq_vhost
+    type: string
+    label: RabbitMQ VHost
+    default: 'pcf'
+    description: RabbitMQ VHost
+
+packages:
+- name: rabbitmq
+  type: docker-bosh
+  docker_images:
+  - frodenas/rabbitmq
+  instance_type: 'c4.large'
+  cpu: 2
+  memory: 3840
+  ephemeral_disk: 8192
+  persistent_disk: 4096
+  instances: 1
+  manifest: |
+    containers:
+    - name: rabbitmq
+      image: "frodenas/rabbitmq"
+      bind_volumes:
+      - "/data"
+      bind_ports:
+      - "5672:5672"
+      - "15672:15672"
+      env_vars:
+      - "RABBITMQ_USERNAME=((.properties.rabbitmq_username.value))"
+      - "RABBITMQ_PASSWORD=((.properties.rabbitmq_password.value))"
+      - "RABBITMQ_VHOST=((.properties.rabbitmq_vhost.value))"

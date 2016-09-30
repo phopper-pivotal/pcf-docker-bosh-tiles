@@ -1,0 +1,74 @@
+---
+name: mysql # By convention lowercase with dashes
+icon_file: resources/cf-mysql.png
+label: MySQL
+description: A Community MySQL Tile for Pivotal Cloud Foundry
+
+apply_open_security_group: true         # Apply open security group, default: false
+
+properties:
+- name: author
+  type: string
+  label: Author
+  value: bbertka@pivotal.io
+
+docker_release:
+ - name: docker
+   version: latest
+
+stemcell_criteria:
+  version: '3262.12'
+
+forms:
+- name: mysql-form
+  label: MySQL Config
+  description: Custom Properties for MongoDB Service Broker
+  properties:
+  - name: mysql_host
+    type: string
+    label: MySQL Hostname
+    default: 'mysql.yourdomain.com'
+    description: MySQL Host Name
+  - name: mysql_port
+    type: integer
+    label: Port
+    default: '3306'
+    description: MySQL Port Name
+  - name: mysql_username
+    type: string
+    label: MySQL Username
+    default: 'admin'
+    description: MySQL User Name
+  - name: mysql_password
+    type: secret
+    label: MySQL Password
+    description: MySQL Password
+  - name: mysql_database
+    type: string
+    label: MySQL Database
+    default: 'pcf'
+    description: MySQL Database
+
+packages:
+- name: mysql
+  type: docker-bosh
+  docker_images:
+  - frodenas/mysql
+  instance_type: 'c4.large'
+  cpu: 2
+  memory: 3840
+  ephemeral_disk: 8192
+  persistent_disk: 4096
+  instances: 1
+  manifest: |
+    containers:
+    - name: mysql
+      image: "frodenas/mysql"
+      bind_volumes:
+      - "/data"
+      bind_ports:
+      - "3306:3306"
+      env_vars:
+      - "MYSQL_USERNAME=((.properties.mysql_username.value))"
+      - "MYSQL_PASSWORD=((.properties.mysql_password.value))"
+      - "MYSQL_DBNAME=((.properties.mysql_database.value))"

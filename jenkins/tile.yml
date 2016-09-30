@@ -1,0 +1,43 @@
+---
+name: jenkins # By convention lowercase with dashes
+icon_file: resources/cf-jenkins.png
+label: Jenkins OSS
+description: A Community OSS Jenkins Tile for Pivotal Cloud Foundry
+
+apply_open_security_group: true         # Apply open security group, default: false
+
+properties:
+- name: author
+  type: string
+  label: Author
+  value: bbertka@pivotal.io
+
+docker_release:
+ - name: docker
+   version: latest
+
+stemcell_criteria:
+  version: '3262.12'
+
+packages:
+- name: jenkins
+  type: docker-bosh
+  docker_images:
+  - jenkins
+  instance_type: 'c4.large'
+  cpu: 2
+  memory: 3840
+  ephemeral_disk: 8192
+  persistent_disk: 4096
+  instances: 1
+  manifest: |
+    containers:
+    - name: jenkins
+      image: "jenkins"
+      bind_volumes:
+      - "/var/jenkins_home"
+      bind_ports:
+      - "8080:8080"
+      - "50000:50000"
+      env_vars:
+      - "JAVA_OPTS=-Xmx2048m"

@@ -1,0 +1,7 @@
+security:
+  user:
+    name: admin
+    password: password
+mongodb:
+  host: localhost
+  port: 27017

@@ -1,0 +1,84 @@
+<%
+director_uuid = 'b13532f4-6a29-4089-9a54-601861845d68'
+deployment_name = 'docker-rancher'
+%>
+---
+
+name: <%= deployment_name %>
+director_uuid: <%= director_uuid %>
+
+
+releases:
+ - name: docker
+   version: latest
+
+compilation:
+  reuse_compilation_vms: true
+  workers: 1
+  network: pcfnet
+  cloud_properties:
+    instance_type: t2.micro
+    availability_zone: us-west-2a  # <----- Replace with Availability zone
+    ephemeral_disk:
+      size: 2048
+      type: gp2
+
+update:
+  canaries: 0
+  canary_watch_time: 30000-60000
+  update_watch_time: 30000-60000
+  max_in_flight: 32
+  serial: false
+
+networks: # from installation.yml
+- name: pcfnet
+  subnets:
+  - range: 10.0.16.0/20
+    gateway: 10.0.16.1
+    dns:
+    - 10.0.0.2
+    reserved:
+    - 10.0.16.1-10.0.16.9
+    - 10.0.16.10-10.0.16.99
+    cloud_properties:
+      subnet: subnet-744f7e10 # <----- Replace with example Subnet ID
+      availability_zone: us-west-2a # <----- Replace with Availability Zone
+      security_groups:
+        - bosh
+        - docker
+
+resource_pools:
+- name: vms
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: '3262.14'
+  network: pcfnet
+  cloud_properties:
+    instance_type: t2.large
+    availability_zone: us-west-2a # <----- Replace with Availability Zone
+    ephemeral_disk:
+      size: 8192
+      type: gp2
+
+jobs:
+  - name: rancher
+    templates:
+      - name: docker
+      - name: containers
+    instances: 1
+    resource_pool: vms
+    persistent_disk: 65536
+    networks:
+      - name: pcfnet
+        default: [dns, gateway]
+    properties:
+      docker:
+        debug: true
+      containers:
+        - name: rancher
+          image: "rancher/server:latest"
+          memory: 2048M
+          restart: always
+          bind_ports:
+            - "8080:8080"
+            - "3306:3306"

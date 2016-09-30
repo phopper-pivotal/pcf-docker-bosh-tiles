@@ -1,0 +1,85 @@
+<%
+director_uuid = ' c8866a05-dd2a-4211-9fbd-285f3fb02367'
+deployment_name = 'docker-bosh-jenkins'
+%>
+---
+
+name: <%= deployment_name %>
+director_uuid: <%= director_uuid %>
+
+
+releases:
+ - name: docker
+   version: latest
+
+compilation:
+  reuse_compilation_vms: true
+  workers: 1
+  network: public
+  cloud_properties:
+    instance_type: t2.micro
+    availability_zone: us-west-2a  # <----- Replace with Availability zone
+    ephemeral_disk:
+      size: 2048
+      type: gp2
+
+update:
+  canaries: 0
+  canary_watch_time: 30000-60000
+  update_watch_time: 30000-60000
+  max_in_flight: 32
+  serial: false
+
+networks: # from installation.yml
+- name: public
+  subnets:
+  - range: 10.0.0.0/20
+    gateway: 10.0.0.1
+    dns:
+    - 10.0.0.2
+    reserved:
+    - 10.0.0.1-10.0.0.99
+    cloud_properties:
+      subnet: subnet-a8d1e3cc # <----- Replace with example Subnet ID
+      availability_zone: us-west-2a # <----- Replace with Availability Zone
+      security_groups:
+        - docker-bosh
+        - docker-jenkins
+
+resource_pools:
+- name: vms
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: '3262.12'
+  network: public
+  cloud_properties:
+    instance_type: t2.large
+    availability_zone: us-west-2a # <----- Replace with Availability Zone
+    ephemeral_disk:
+      size: 8192
+      type: gp2
+
+jobs:
+  - name: jenkins
+    templates:
+      - name: docker
+      - name: containers
+    instances: 1
+    resource_pool: vms
+    persistent_disk: 65536
+    networks:
+      - name: public
+        default: [dns, gateway]
+    properties:
+      docker:
+        debug: true
+      containers:
+        - name: jenkins
+          image: "jenkins"
+          memory: 2048M
+          restart: always
+          bind_ports:
+            - "8080:8080"
+            - "50000:50000"
+          env_vars:
+            - "JAVA_OPTS=-Xmx2048m"

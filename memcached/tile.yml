@@ -1,0 +1,71 @@
+---
+name: memcached # By convention lowercase with dashes
+icon_file: resources/cf-memcached.png
+label: MEMCACHED
+description: A Community Memcached Tile for Pivotal Cloud Foundry
+
+apply_open_security_group: true         # Apply open security group, default: false
+
+properties:
+- name: author
+  type: string
+  label: Author
+  value: bbertka@pivotal.io
+
+docker_release:
+ - name: docker
+   version: latest
+
+stemcell_criteria:
+  version: '3262.12'
+
+forms:
+- name: memcached-form
+  label: Memcached Config
+  description: Custom Properties for Memcached Service Broker
+  properties:
+  - name: memcached_host
+    type: string
+    label: Memcached Hostname
+    default: 'memcached.yourdomain.com'
+    description: Memcached Host Name
+  - name: memcached_port
+    type: integer
+    label: Port
+    default: '11211'
+    description: Memcached Port Name
+  - name: memcached_username
+    type: string
+    label: Memcached Username
+    default: 'admin'
+    description: Memcached User Name
+  - name: memcached_password
+    type: secret
+    label: Memcached Password
+    description: Memcached Password
+  - name: memcached_database
+    type: string
+    label: Memcached Database
+    default: 'pcf'
+    description: Memcached Database
+
+packages:
+- name: memcached
+  type: docker-bosh
+  docker_images:
+  - frodenas/memcached
+  instance_type: 'c4.large'
+  cpu: 2
+  memory: 3840
+  ephemeral_disk: 8192
+  persistent_disk: 4096
+  instances: 1
+  manifest: |
+    containers:
+    - name: memcached
+      image: "frodenas/memcached"
+      bind_ports:
+      - "11211:11211"
+      env_vars:
+      - "MEMCACHED_USERNAME=((.properties.memcached_username.value))"
+      - "MEMCACHED_PASSWORD=((.properties.memcached_password.value))"

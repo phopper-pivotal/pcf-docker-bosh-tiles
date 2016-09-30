@@ -1,0 +1,19 @@
+---
+name: docker-bosh
+label: Docker
+description: A Pivotal Cloud Foundry Community Docker-Bosh release tile enabling Docker-backed Bosh deployemnts
+icon_file: resources/cf-docker.png
+
+properties:
+- name: author
+  type: string
+  label: Author
+  value: bbertka@pivotal.io
+
+packages:
+ - name: docker-bosh
+   type: bosh-release
+   path: dev_releases/docker/docker-28.0.1+dev.3.tgz
+
+stemcell_criteria:
+  version: '3262.12'
