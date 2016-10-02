@@ -139,6 +139,8 @@ created tile jenkins-0.0.1.pivotal
 ----
 $ pcf import products/jenkins-0.0.1.pivotal
 ----
++
+image:images/jenkins-tile.png[]
 
 . Use OpsManager to configure and deploy the tile
 +
