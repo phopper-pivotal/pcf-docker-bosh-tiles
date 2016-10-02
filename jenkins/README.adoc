@@ -1,5 +1,9 @@
 = Jenkins OSS Tile for Pivotal Cloud Foundry
-This repository contains instructions for building a Docker-backed Bosh Managed Jenkins OSS tile for Pivotal Cloud Foundry (tested with Pivotal Cloud Foundry Elastic Runtime 1.8.4).  After working through this lab you will have a functioning Docker-backed singlenode Jenkins service managed by Bosh.
+This repository contains instructions for building a Docker-backed Bosh Managed Jenkins OSS tile for Pivotal Cloud Foundry (tested with Pivotal Cloud Foundry Elastic Runtime 1.8.4).  
+
+image:images/jenkins-tile.png[]
+
+After working through this lab you will have a functioning Docker-backed singlenode Jenkins service managed by Bosh.
 
 == Requirements
 . Pivotal Ops Manager (for tiles)
@@ -39,11 +43,9 @@ Commands:
 ----
 
 == Install Docker
-+
 . Please Refer to the official instructions for installing Docker
 
 == Build A Custom Tile: Jenkins OSS
-
 . Pull the latest Jenkins Docker image
 +
 ----
@@ -139,9 +141,133 @@ $ pcf import products/jenkins-0.0.1.pivotal
 ----
 
 . Use OpsManager to configure and deploy the tile
++
+image:images/jenkins-az.png[]
+image:images/jenkins-tile.png[]
+
+. Check the new Bosh Releases on your system (docker and Jenkins have just been added):
++
+----
+$ bosh releases
+Acting as user 'director' on 'p-bosh-8f96b683c9e517b2d3d1'
+RSA 1024 bit CA certificates are loaded due to old openssl compatibility
+
++---------------------------+-----------+-------------+
+| Name                      | Versions  | Commit Hash |
++---------------------------+-----------+-------------+
+| docker                    | 23*       | 82346881+   |
+| jenkins                   | 0.0.1*    | d07962a5+   |
++---------------------------+-----------+-------------+
+(*) Currently deployed
+(+) Uncommitted changes
+
+----
+
+. Check the Bosh Deployments on your system
++
+----
+ubuntu@ip-10-0-0-50:~/pcf-docker-bosh-tiles/jenkins$ bosh deployments
+Acting as user 'director' on 'p-bosh-8f96b683c9e517b2d3d1'
+RSA 1024 bit CA certificates are loaded due to old openssl compatibility
+
++------------------------------+-------------------------------+-------------------------------------------------+--------------+
+| Name                         | Release(s)                    | Stemcell(s)                                     | Cloud Config |
++------------------------------+-------------------------------+-------------------------------------------------+--------------+
+| jenkins-8701f08726c371e05fda | docker/23                     | bosh-aws-xen-hvm-ubuntu-trusty-go_agent/3262.19 | latest       |
+|                              | jenkins/0.0.1                 |                                                 |              |
++------------------------------+-------------------------------+-------------------------------------------------+--------------+
+----
+
+. Check your newly running VM's status:
++
+----
+Acting as user 'director' on 'p-bosh-8f96b683c9e517b2d3d1'
+RSA 1024 bit CA certificates are loaded due to old openssl compatibility
+Deployment 'jenkins-8701f08726c371e05fda'
+
+Director task 178
+
+Task 178 done
+
++--------------------------------------------------------------+---------+------------+----------+------------+
+| VM                                                           | State   | AZ         | VM Type  | IPs        |
++--------------------------------------------------------------+---------+------------+----------+------------+
+| docker-bosh-jenkins/0 (37370cee-cf3d-412f-a4d4-8bf04698f8cf) | running | us-west-2a | c4.large | 10.0.0.100 |
++--------------------------------------------------------------+---------+------------+----------+------------+
+
+VMs total: 1
+----
 
 == Configuring deployed Jenkins
-. TO DO: Set the default admin password:
+. Navigate to your newly running application in a browser, you might need to map DNS or create a load balancer
+image:images/jenkins-app.png[]
+
+. Bosh-SSH Into the *docker-bosh-jenkins* instance:
++
+----
+$ bosh deployment /var/tempest/workspaces/default/deployments/jenkins-8701f08726c371e05fda.yml
+$ bosh ssh
+RSA 1024 bit CA certificates are loaded due to old openssl compatibility
+Acting as user 'director' on deployment 'jenkins-8701f08726c371e05fda' on 'p-bosh-8f96b683c9e517b2d3d1'
+Target deployment is 'jenkins-8701f08726c371e05fda'
+
+Setting up ssh artifacts
+
+Director task 183
+
+Task 183 done
+Starting interactive shell on job docker-bosh-jenkins/0
+Unauthorized use is strictly prohibited. All access and activity
+is subject to logging and monitoring.
+Welcome to Ubuntu 14.04.5 LTS (GNU/Linux 3.19.0-69-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+Last login: Sun Oct  2 05:42:03 2016 from 10.0.0.50
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+bosh_k5l5thtm0@cebd95d7-50e5-4699-bd29-68dfb1606a91:~$
+----
+
+. Check out Docker-Bosh and Monit logs
++
+----
+$ sudo su
+$ cd /var/vcap/sys/log
+$ ls -al
+
+total 32
+drwxr-x--- 6 root vcap 4096 Oct  2 05:19 .
+drwxr-x--- 5 root vcap 4096 Oct  2 05:19 ..
+drwxrwxr-x 2 vcap vcap 4096 Oct  2 05:19 containers
+drwxrwxr-x 2 vcap vcap 4096 Oct  2 05:19 docker
+drwxr-xr-x 2 vcap vcap 4096 Oct  2 05:19 docker-bosh-jenkins
+-rw-r--r-- 1 root root  120 Oct  2 05:19 docker-bosh-jenkins_ctl.err.log
+-rw-r--r-- 1 root root  120 Oct  2 05:19 docker-bosh-jenkins_ctl.log
+drwxr-xr-x 2 root root 4096 Oct  2 05:19 monit
+----
+
+. Find the auto-generated password in the Jenkins Container startup logs:
++
+----
+$ cd /var/vcap/store/docker/docker/containers/c3c59ce38b4bbb45fea35f074080674370072127780d051b73d4c9729b3c796a
+$ cat c3c59ce38b4bbb45fea35f074080674370072127780d051b73d4c9729b3c796a-json.log
+
+{"log":"Jenkins initial setup is required. An admin user has been created and a password generated.\n","stream":"stderr","time":"2016-10-02T05:20:24.114393787Z"}
+{"log":"Please use the following password to proceed to installation:\n","stream":"stderr","time":"2016-10-02T05:20:24.114399047Z"}
+{"log":"99e74f081850426793a2a4bc6436ebb3\n","stream":"stderr","time":"2016-10-02T05:20:24.114409232Z"}
+{"log":"This may also be found at: /var/jenkins_home/secrets/initialAdminPassword\n","stream":"stderr","time":"2016-10-02T05:20:24.114419083Z"}
+----
 
 == Congratulations!
 You now have a working Jenkins Deployment backed by Docker, and managed by Bosh
+
+image:images/jenkins-login.png[]
