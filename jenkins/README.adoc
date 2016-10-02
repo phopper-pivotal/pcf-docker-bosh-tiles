@@ -143,7 +143,7 @@ $ pcf import products/jenkins-0.0.1.pivotal
 . Use OpsManager to configure and deploy the tile
 +
 image:images/jenkins-az.png[]
-image:images/jenkins-tile.png[]
+image:images/jenkins-resource.png[]
 
 . Check the new Bosh Releases on your system (docker and Jenkins have just been added):
 +
