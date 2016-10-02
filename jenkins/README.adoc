@@ -1,15 +1,19 @@
 = Jenkins OSS Tile for Pivotal Cloud Foundry
 This repository contains instructions for building a Docker-backed Bosh Managed Jenkins OSS tile for Pivotal Cloud Foundry (tested with Pivotal Cloud Foundry Elastic Runtime 1.8.4).  
 
+This tile makes use of the official link:https://github.com/cloudfoundry-community/docker-boshrelease[Docker Bosh Release].
+
 image:images/jenkins-tile.png[]
 
 After working through this lab you will have a functioning Docker-backed singlenode Jenkins service managed by Bosh.
 
+Please take a moment to review the Docker-Bosh 
+
 == Requirements
-. Pivotal Ops Manager (for tiles)
-. BOSH CLI
-. Tile Generator Tools
-. Docker
+. link:http://docs.pivotal.io/pivotalcf/1-8/customizing/[Pivotal Ops Manager]
+. linnk:http://bosh.io/docs/bosh-cli.html[BOSH CLI]
+. link:http://cf-platform-eng.github.io/isv-portal/tile-generator/[Tile Generator Tools]
+. link:https://docs.docker.com/engine/installation/linux/ubuntulinux/[Docker]
 
 == Install Tile Generator Tools 
 . Read through the Pivotal Cloud Foundry Engineering ISV Documentation for custom PCF tile creation: http://cf-platform-eng.github.io/isv-portal/tile-generator/
@@ -43,7 +47,7 @@ Commands:
 ----
 
 == Install Docker
-. Please Refer to the official instructions for installing Docker
+. Please Refer to the official instructions for link:https://docs.docker.com/engine/installation/linux/ubuntulinux/[Docker]
 
 == Build A Custom Tile: Jenkins OSS
 . Pull the latest Jenkins Docker image
