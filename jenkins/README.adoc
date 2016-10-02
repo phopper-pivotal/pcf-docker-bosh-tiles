@@ -43,7 +43,7 @@ Commands:
 . Please Refer to the official instructions for installing Docker
 
 == Build A Custom Tile: Jenkins OSS
-+
+
 . Pull the latest Jenkins Docker image
 +
 ----
@@ -141,9 +141,7 @@ $ pcf import products/jenkins-0.0.1.pivotal
 . Use OpsManager to configure and deploy the tile
 
 == Configuring deployed Jenkins
-+
 . TO DO: Set the default admin password:
 
 == Congratulations!
-
 You now have a working Jenkins Deployment backed by Docker, and managed by Bosh
