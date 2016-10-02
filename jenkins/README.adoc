@@ -139,6 +139,20 @@ created tile jenkins-0.0.1.pivotal
 ----
 $ pcf import products/jenkins-0.0.1.pivotal
 ----
+
+. Verify new product is installed with Pcf utility:
++
+----
+$ pcf products
+
+ - jenkins 0.0.1 (installed)
+- cf 1.8.4-build.3 (installed)
+----
+
+. Add Jenkins tile to dashboard
+----
+$ pcf install jenkins 0.0.1
+----
 +
 image:images/jenkins-tile.png[]
 
