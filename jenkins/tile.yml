@@ -17,7 +17,7 @@ docker_release:
    version: latest
 
 stemcell_criteria:
-  version: '3262.12'
+  version: '3262.19'
 
 packages:
 - name: jenkins
@@ -28,7 +28,7 @@ packages:
   cpu: 2
   memory: 3840
   ephemeral_disk: 8192
-  persistent_disk: 4096
+  persistent_disk: 20480
   instances: 1
   manifest: |
     containers:
@@ -39,5 +39,3 @@ packages:
       bind_ports:
       - "8080:8080"
       - "50000:50000"
-      env_vars:
-      - "JAVA_OPTS=-Xmx2048m"

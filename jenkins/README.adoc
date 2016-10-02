@@ -1,0 +1,149 @@
+= Jenkins OSS Tile for Pivotal Cloud Foundry
+This repository contains instructions for building a Docker-backed Bosh Managed Jenkins OSS tile for Pivotal Cloud Foundry (tested with Pivotal Cloud Foundry Elastic Runtime 1.8.4).  After working through this lab you will have a functioning Docker-backed singlenode Jenkins service managed by Bosh.
+
+== Requirements
+. Pivotal Ops Manager (for tiles)
+. BOSH CLI
+. Tile Generator Tools
+. Docker
+
+== Install Tile Generator Tools 
+. Read through the Pivotal Cloud Foundry Engineering ISV Documentation for custom PCF tile creation: http://cf-platform-eng.github.io/isv-portal/tile-generator/
+. Install tile-generator tools according to the documentation: http://cf-platform-eng.github.io/isv-portal/tile-generator/
+. Create Ops Manager Metadata for the Pcf utility to make Ops Manager queries on your behalf (only for PCF)
++
+----
+$ touch metadata
+$ echo "---" >> metadata
+$ echo "opsmgr:" >> metadata
+$ echo "    url: https://opsman.your-company.com" >> metadata
+$ echo "    username: webuser" >> metadata
+$ echo "    password: webpass" >> metadata
+----
+
+. Test your installation of Tile Generator tools. Anywhere the Pcf utility is run the _metadata_ file must exist in working directory:
++
+----
+$ pcf products
+- cf 1.8.4-build.3 (installed)
+
+$ tile
+Usage: tile [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  build
+  init
+----
+
+== Install Docker
++
+. Please Refer to the official instructions for installing Docker
+
+== Build A Custom Tile: Jenkins OSS
++
+. Pull the latest Jenkins Docker image
++
+----
+$ docker pull jenkins
+----
+
+. Create a tile.yml manifest:
++
+----
+---
+name: jenkins
+icon_file: resources/cf-jenkins.png  # 128p x 128p PNG file
+label: Jenkins OSS
+description: A Community OSS Jenkins Tile for Pivotal Cloud Foundry
+
+properties:
+- name: author
+  type: string
+  label: Author
+  value: admin@your-company.com
+
+docker_release:
+ - name: docker
+   version: latest
+
+packages:
+- name: jenkins
+  type: docker-bosh
+
+  # Requires included Docker images
+  docker_images:
+  - jenkins
+
+  # Instance settings configurable by Ops Man GUI
+  instance_type: 'c4.large'
+  cpu: 2
+  memory: 3840
+  ephemeral_disk: 8192
+  persistent_disk: 20480
+  instances: 1
+
+  # This is the Docker app to run
+  manifest: |
+    containers:
+    - name: jenkins
+      image: "jenkins"
+      bind_volumes:
+      - "/var/jenkins_home"
+      bind_ports:
+      - "8080:8080"
+      - "50000:50000"
+
+stemcell_criteria:
+  version: '3262.19'
+
+----
+
+. Build the custom tile (see sample OSS CF manifest if you dont have an Ops Manager)
++
+----
+$ tile build
+
+name: jenkins
+icon: resources/cf-jenkins.png
+label: Jenkins OSS
+description: A Community OSS Jenkins Tile for Pivotal Cloud Foundry
+version: 0.0.1
+stemcell_criteria:
+  os: ubuntu-trusty
+  version: 3262.19
+tile adding package jenkins
+tile building bosh release for jenkins
+bosh init release
+bosh generate package jenkins
+bosh generate job docker-bosh-jenkins
+bosh generate package common
+bosh upload blobs
+bosh create release --force --final --with-tarball --version 0.0.1
+tile import release docker
+tile generate metadata
+tile generate content-migrations
+tile generate migrations
+tile generate package
+tile import release jenkins
+
+created tile jenkins-0.0.1.pivotal
+----
+
+. Upload Tile to Pivotal Cloud Foundry
++
+----
+$ pcf import products/jenkins-0.0.1.pivotal
+----
+
+. Use OpsManager to configure and deploy the tile
+
+== Configuring deployed Jenkins
++
+. TO DO: Set the default admin password:
+
+== Congratulations!
+
+You now have a working Jenkins Deployment backed by Docker, and managed by Bosh
