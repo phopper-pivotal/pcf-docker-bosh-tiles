@@ -150,6 +150,7 @@ $ pcf products
 ----
 
 . Add Jenkins tile to dashboard
++
 ----
 $ pcf install jenkins 0.0.1
 ----
