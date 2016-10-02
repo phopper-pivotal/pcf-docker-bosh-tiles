@@ -7,11 +7,9 @@ image:images/jenkins-tile.png[]
 
 After working through this lab you will have a functioning Docker-backed singlenode Jenkins service managed by Bosh.
 
-Please take a moment to review the Docker-Bosh 
-
 == Requirements
 . link:http://docs.pivotal.io/pivotalcf/1-8/customizing/[Pivotal Ops Manager]
-. linnk:http://bosh.io/docs/bosh-cli.html[BOSH CLI]
+. link:http://bosh.io/docs/bosh-cli.html[BOSH CLI]
 . link:http://cf-platform-eng.github.io/isv-portal/tile-generator/[Tile Generator Tools]
 . link:https://docs.docker.com/engine/installation/linux/ubuntulinux/[Docker]
 
