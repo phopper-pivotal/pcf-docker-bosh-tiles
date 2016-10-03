@@ -17,7 +17,7 @@ docker_release:
    version: latest
 
 stemcell_criteria:
-  version: '3262.12'
+  version: '3262.19'
 
 forms:
 - name: mongodb-form
@@ -55,6 +55,9 @@ packages:
   manifest:
     path: service-broker/target/mongodb-service-broker-0.0.1-RELEASE.jar
     memory: 1G
+    env:
+      MONGODB_HOST=((.properties.mongodb_host.value))
+
 - name: mongodb
   type: docker-bosh
   docker_images:
