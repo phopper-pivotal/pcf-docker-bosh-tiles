@@ -56,7 +56,7 @@ packages:
     path: service-broker/target/mongodb-service-broker-0.0.1-RELEASE.jar
     memory: 1G
     env:
-      MONGODB_HOST=((.properties.mongodb_host.value))
+      MONGODB_HOST: ((.properties.mongodb_host.value))
 
 - name: mongodb
   type: docker-bosh
