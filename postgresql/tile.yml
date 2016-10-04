@@ -4,6 +4,8 @@ icon_file: resources/cf-postgresql.png
 label: PostgreSQL
 description: A Community PostgreSQL Tile for Pivotal Cloud Foundry
 
+enable_global_access_to_plans: true
+
 apply_open_security_group: true         # Apply open security group, default: false
 
 properties:
@@ -17,33 +19,33 @@ docker_release:
    version: latest
 
 stemcell_criteria:
-  version: '3262.12'
+  version: '3262.19'
 
 forms:
 - name: psql-form
   label: PostgreSQL Config
   description: Custom Properties for MongoDB Service Broker
   properties:
-  - name: psql_host
+  - name: postgresql_host
     type: string
     label: PostgreSQL Hostname
     default: 'psql.yourdomain.com'
     description: PostgreSQL Host Name
-  - name: psql_port
+  - name: postgresql_port
     type: integer
     label: Port
     default: '5432'
     description: PostgreSQL Port Name
-  - name: psql_username
+  - name: postgresql_username
     type: string
     label: PostgreSQL Username
     default: 'admin'
     description: PostgreSQL User Name
-  - name: psql_password
+  - name: postgresql_password
     type: secret
     label: PostgreSQL Password
     description: PostgreSQL Password
-  - name: psql_database
+  - name: postgresql_database
     type: string
     label: PostgreSQL Database
     default: 'pcf'
@@ -53,10 +55,10 @@ packages:
 - name: psql-broker
   type: app-broker
   manifest:
-    path: postgresql-cf-service-broker/target/postgresql-cf-service-broker-2.4.0-SNAPSHOT.jar
+    path: postgresql-cf-service-broker/target/postgresql-cf-service-broker-2.8.0-SNAPSHOT.jar
     memory: 1G
     env:
-      MASTER_JDBC_URL: jdbc:postgresql://((.properties.psql_host.value)):((.properties.psql_port.value))/((.properties.psql_database.value))?user=((.properties.psql_username.value))&password=((.properties.psql_password.value))
+      MASTER_JDBC_URL: 'jdbc:postgresql://((.properties.postgresql_host.value)):5432/cf?user=((.properties.postgresql_username.value))&password=((.properties.postgresql_password.value))'
 
 - name: postgresql
   type: docker-bosh
@@ -73,10 +75,10 @@ packages:
     - name: postgresql
       image: "frodenas/postgresql"
       bind_volumes:
-      - "/tmp/postgresql:/data"
+      - "/data"
       bind_ports:
       - "5432:5432"
       env_vars:
-      - "POSTGRES_USERNAME=((.properties.psql_username.value))"
-      - "POSTGRES_PASSWORD=((.properties.psql_password.value))"
-      - "POSTGRES_DBNAME=((.properties.psql_database.value))"
+      - "POSTGRES_USERNAME=((.properties.postgresql_username.value))"
+      - "POSTGRES_PASSWORD=((.properties.postgresql_password.value))"
+      - "POSTGRES_DBNAME=((.properties.postgresql_database.value))"
