@@ -6,7 +6,7 @@ Tested with MongoDB 2.6, and PCF 1.6.9+
 +
 ----
 $ cd docker-mongodb
-$ docker build -t bbertla/mongodb:latest .
+$ docker build -t bbertka/mongodb:latest .
 $ docker images
 REPOSITORY            TAG                 IMAGE ID            CREATED             SIZE
 bbertka/mongodb       latest              73e4dbd6f4f0        11 hours ago        550.6 MB
