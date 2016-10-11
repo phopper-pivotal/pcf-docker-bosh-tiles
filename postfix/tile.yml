@@ -1,0 +1,50 @@
+---
+name: postfix
+icon_file: resources/cf-postfix.png
+label: Postfix 
+description: A Community Postfix SMTP Mail Service for Cloud Foundry
+
+properties:
+- name: author
+  type: string
+  label: Author
+  value: bbertka@pivotal.io
+
+docker_release:
+ - name: docker
+   version: latest
+
+stemcell_criteria:
+  version: '3262.19'
+
+forms:
+- name: postfix-form
+  label: SMTP Config
+  description: Custom Properties for Postfix Service
+
+  properties:
+  - name: postfix_maildomain
+    type: string
+    label: Mail Transport Protocol Domain
+    default: 'yourdomain.com'
+    description: Please enter your desired MTP domain name
+
+packages:
+- name: postfix
+  type: docker-bosh
+  docker_images:
+  - eeacms/postfix
+  instance_type: 't2.micro'
+  cpu: 1
+  memory: 1024
+  ephemeral_disk: 8192
+  persistent_disk: 1024
+  instances: 1
+  manifest: |
+    containers:
+    - name: postfix
+      image: "eeacms/postfix"
+      bind_ports:
+      - '25:25'
+      env_vars:
+      - "MTP_HOST=((.properties.postfix_maildomain.value))"
